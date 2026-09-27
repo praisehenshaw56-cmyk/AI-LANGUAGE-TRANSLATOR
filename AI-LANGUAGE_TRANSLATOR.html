@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="AI Language Translator and Safety Communication frontend dashboard.">
+<title>AI Language Translator — Safety Communication</title>
+<link rel="icon" href="AI.png">
+<style>
+:root{
+  --bg:#050914;--panel:#0b1424;--panel2:#101c30;--line:rgba(255,255,255,.09);
+  --text:#edf5ff;--muted:#8fa4bd;--cyan:#37d8ff;--blue:#4f7cff;--green:#39e6a4;
+  --amber:#ffc857;--red:#ff5c73;--shadow:0 24px 70px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;background:
+ radial-gradient(circle at 15% 0%,rgba(55,216,255,.12),transparent 30%),
+ radial-gradient(circle at 90% 15%,rgba(79,124,255,.14),transparent 30%),var(--bg);
+ color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+ min-height:100vh
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:265px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:22px 16px;border-right:1px solid var(--line);background:rgba(5,9,20,.82);backdrop-filter:blur(20px);z-index:20}
+.brand{display:flex;align-items:center;gap:12px;padding:8px 9px 24px}
+.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-weight:900;color:#00131b;
+ background:linear-gradient(135deg,#a7f4ff,#37d8ff,#4f7cff);box-shadow:0 0 30px rgba(55,216,255,.35);animation:pulse 3s infinite}
+.brand strong{display:block;font-size:14px;letter-spacing:.08em}.brand span{font-size:11px;color:var(--muted)}
+.nav{display:grid;gap:7px}.nav button{border:1px solid transparent;background:transparent;color:#aebed1;text-align:left;padding:12px 13px;border-radius:12px;display:flex;gap:11px;align-items:center}
+.nav button:hover,.nav button.active{background:rgba(55,216,255,.08);border-color:rgba(55,216,255,.14);color:#fff}
+.side-status{position:absolute;left:16px;right:16px;bottom:20px;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);margin-right:8px}
+.main{min-width:0}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--line);background:rgba(5,9,20,.55);backdrop-filter:blur(18px);position:sticky;top:0;z-index:15}
+.menu{display:none}.top-title small{display:block;color:var(--muted);font-size:11px}.top-title strong{font-size:17px}
+.top-actions{display:flex;gap:9px;align-items:center}.icon-btn,.primary,.danger,.ghost{border:1px solid var(--line);border-radius:11px;padding:10px 13px;background:rgba(255,255,255,.04);color:#fff}
+.primary{background:linear-gradient(135deg,#1bbfe9,#4f7cff);border:0;box-shadow:0 8px 24px rgba(55,216,255,.18)}
+.danger{background:rgba(255,92,115,.1);color:#ff9aaa;border-color:rgba(255,92,115,.25)}
+.content{padding:25px;max-width:1500px;margin:auto}.hero{display:grid;grid-template-columns:1.5fr .8fr;gap:18px;margin-bottom:18px}
+.hero-card,.panel{background:linear-gradient(145deg,rgba(16,28,48,.94),rgba(8,15,28,.94));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+.hero-card{padding:28px;position:relative;overflow:hidden}.hero-card:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-80px;top:-80px;background:rgba(55,216,255,.1);filter:blur(10px)}
+.eyebrow{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(27px,4vw,48px);line-height:1.03;margin:10px 0}.hero p{color:var(--muted);max-width:760px;line-height:1.7;margin-bottom:20px}
+.hero-buttons{display:flex;flex-wrap:wrap;gap:9px}.signal-card{padding:22px;display:flex;flex-direction:column;justify-content:center}
+.signal-ring{width:96px;height:96px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;background:radial-gradient(circle,#0c2432 48%,transparent 50%),conic-gradient(var(--cyan),#4fffad,var(--green),var(--cyan));animation:spin 8s linear infinite;transition:transform .08s ease,box-shadow .08s ease}
+.signal-ring span{font-size:25px;animation:spin 8s linear infinite reverse;transition:transform .06s ease}.signal-card{text-align:center}.signal-card h3{margin:4px 0}.signal-card p{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:1.05fr 1fr .85fr;gap:18px}.panel{padding:20px}.panel h2{font-size:15px;margin:0 0 16px}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.field{display:grid;gap:7px;margin-bottom:13px}.field label{font-size:11px;color:var(--muted);font-weight:700}.field input,.field select,.field textarea{
+ width:100%;border:1px solid var(--line);background:#07101e;color:#fff;border-radius:11px;padding:11px;outline:none
+}.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(55,216,255,.55);box-shadow:0 0 0 3px rgba(55,216,255,.08)}
+textarea{resize:vertical;min-height:112px}.wide{grid-column:1/-1}
+.mic{display:grid;grid-template-columns:1fr auto;gap:9px}.mic button{width:50px;border-radius:11px;border:1px solid rgba(55,216,255,.3);background:rgba(55,216,255,.1);color:var(--cyan)}
+.mic button.recording{animation:record 1s infinite;background:rgba(255,92,115,.15);color:#ff8091;border-color:#ff5c73}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.translation{min-height:190px;padding:17px;border-radius:15px;background:#06101c;border:1px solid var(--line);line-height:1.65;color:#d9e8f8}
+.translation .empty{color:#71859d}.language-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.badges{display:flex;gap:7px;flex-wrap:wrap}.badge{padding:6px 8px;border-radius:99px;font-size:10px;background:rgba(55,216,255,.08);color:#8deaff;border:1px solid rgba(55,216,255,.15)}
+.metric{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.metric:last-child{border:0}.metric span{color:var(--muted)}
+.camera{height:235px;border-radius:15px;background:linear-gradient(145deg,#081525,#02060d);border:1px solid var(--line);display:grid;place-items:center;position:relative;overflow:hidden}
+.camera:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7px,rgba(55,216,255,.025) 8px 9px)}
+.cam-icon{font-size:42px;opacity:.8}.cam-label{position:absolute;top:11px;left:12px;font-size:10px;color:#9fb3c9}.live{position:absolute;right:12px;top:10px;color:#ff6b7f;font-size:10px;font-weight:800}.camera-controls{display:flex;gap:7px;margin-top:9px}
+.log{max-height:205px;overflow:auto;font-family:ui-monospace,monospace;font-size:10px}.log-row{padding:8px 0;border-bottom:1px solid var(--line);color:#9db1c7}.log-row b{color:var(--cyan)}
+.footer{text-align:center;color:#64778e;font-size:10px;padding:25px}
+.toast{position:fixed;right:20px;bottom:20px;z-index:99;background:#101e31;border:1px solid rgba(55,216,255,.25);box-shadow:var(--shadow);padding:13px 16px;border-radius:13px;transform:translateY(130px);opacity:0;transition:.3s;max-width:330px;font-size:12px}.toast.show{transform:none;opacity:1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(8px);display:none;place-items:center;z-index:80;padding:20px}.modal.show{display:grid}.modal-card{width:min(560px,100%);background:#0b1424;border:1px solid var(--line);border-radius:20px;padding:22px}
+@keyframes pulse{50%{box-shadow:0 0 42px rgba(55,216,255,.58)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes record{50%{box-shadow:0 0 0 8px rgba(255,92,115,.08)}}
+@media(max-width:1050px){.app{grid-template-columns:78px 1fr}.sidebar{padding:18px 10px}.brand div:not(.logo),.nav button span,.side-status{display:none}.brand{justify-content:center}.nav button{justify-content:center}.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}}
+@media(max-width:720px){.app{display:block}.sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;padding:7px;border-right:0;border-top:1px solid var(--line);z-index:40}.brand,.side-status{display:none}.nav{display:flex;justify-content:space-around}.nav button{padding:9px}.nav button span{display:none}.topbar{padding:0 14px;height:65px}.menu{display:block}.top-title strong{font-size:14px}.top-actions .ghost{display:none}.content{padding:14px 12px 80px}.hero-card,.panel{border-radius:17px}.hero-card{padding:20px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.language-row{grid-template-columns:1fr}.signal-card{min-height:190px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo"><img src="AI.png" width="48px" height="48px" style="border-radius: 15px;"></div><div><strong>LANGUAGE AI</strong><span>SAFETY COMMUNICATION</span></div></div>
+  <nav class="nav">
+    <button class="active" onclick="showSection('dashboard',this)">◈ <span>Dashboard</span></button>
+    <button onclick="showSection('translator',this)">◎ <span>Translator</span></button>
+    <button onclick="showSection('audio',this)">◉ <span>Audio</span></button>
+    <button onclick="showSection('camera',this)">▣ <span>Camera</span></button>
+    <button onclick="showSection('admin',this)">⌁ <span>Admin Link</span></button>
+  </nav>
+  <div class="side-status"><span class="dot"></span><b style="font-size:11px">PRODUCTION READY</b><div style="font-size:10px;color:var(--muted);margin-top:5px">Configuration Successful</div></div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <button class="icon-btn menu" onclick="toggleSidebar()">☰</button>
+  <div class="top-title"><small>AI-LANGUAGE_TRANSLATOR</small><strong>Safety Communication Console</strong></div>
+  <div class="top-actions"><button class="ghost" onclick="openModal()">System Info</button><button class="primary" onclick="simulateConnect()">Connect</button></div>
+</header>
+
+<section class="content" id="dashboard">
+<div class="hero">
+ <div class="hero-card">
+  <div class="eyebrow">Multilingual safety interface</div>
+  <h1>Listen. Understand. Communicate.</h1>
+  <p>Frontend dashboard for microphone input, language detection, translation, audio output, camera monitoring and administrator communication. Backend AI, emergency APIs and live streaming can be connected later.</p>
+  <div class="hero-buttons"><button class="primary" onclick="startRecording()">🎙 Start Listening</button><button class="ghost" onclick="runDemo()">▶ Run Demo</button><button class="danger" onclick="emergency()">Emergency</button></div>
+ </div>
+ <div class="hero-card signal-card"><div class="signal-ring" id="signalRing"><span id="signalCore">◉</span></div><h3 id="connectionText">Offline Mode</h3><p id="connectionSub">Waiting for backend / internet connection</p><div class="badges"><span class="badge">MIC READY</span><span class="badge">AI UI READY</span><span class="badge">CAMERA READY</span></div></div>
+</div>
+
+<div class="grid">
+<section class="panel" id="translator">
+ <div class="panel-head"><h2>🎙 Voice Translator</h2><span class="badge" id="recordStatus">IDLE</span></div>
+ <div class="field"><label>SOURCE LANGUAGE</label><select id="source"><option>Auto Detect</option><option>English</option><option>Hausa</option><option>Yoruba</option><option>Igbo</option><option>Arabic</option><option>French</option><option>Kanuri</option></select></div>
+ <div class="field"><label>MICROPHONE INPUT</label><div class="mic"><input id="speechInput" placeholder="Use microphone or type a message…"><button id="micBtn" onclick="startRecording()">🎙</button></div></div>
+ <div class="field"><label>TRANSLATE TO</label><select id="target"><option>English</option><option>Hausa</option><option>Yoruba</option><option>Igbo</option><option>Arabic</option><option>French</option></select></div>
+ <div class="actions">
+      <button class="primary" onclick="translateText()">Translate</button>
+      <button class="ghost" onclick="speakResult()">🔊 Speak</button>
+      <button class="ghost" onclick="toggleAudioRecording()">● Record Audio</button>
+      <button class="ghost" onclick="downloadLastRecording()">Save</button>
+      <button class="ghost" onclick="clearAll()">Clear</button>
+    </div>
+</section>
+
+<section class="panel">
+ <div class="panel-head"><h2>AI Response</h2><span class="badge">SAFE OUTPUT</span></div>
+ <div class="translation" id="result"><div class="empty">Translated / AI-generated response will appear here.</div></div>
+ <div class="metric"><span>Detected language</span><b id="detected">—</b></div>
+ <div class="metric"><span>Confidence</span><b id="confidence">—</b></div>
+ <div class="metric"><span>Noise state</span><b id="noise">Awaiting audio</b></div><div class="metric"><span>Audio level</span><b id="audioLevel">0%</b></div><div class="metric"><span>Recording</span><b id="recordingState">READY</b></div>
+</section>
+
+<section class="panel" id="audio">
+ <div class="panel-head"><h2>🔊 Audio Processing</h2><span class="badge">LOCAL UI</span></div>
+ <div class="metric"><span>Noise suppression</span><b>ON</b></div>
+ <div class="metric"><span>Compressor</span><b>ON</b></div>
+ <div class="metric"><span>Limiter</span><b>ON</b></div>
+ <div class="metric"><span>Voice clarity</span><b id="clarity">92%</b></div>
+ <div class="field" style="margin-top:15px"><label>OUTPUT DEVICE</label><select><option>Default Speaker</option><option>Bluetooth Audio</option><option>USB Audio</option></select></div>
+ <button class="primary" style="width:100%" onclick="testAudio()">Test Output</button>
+</section>
+
+<section class="panel" id="camera">
+ <div class="panel-head"><h2>📹 Security Camera</h2><span class="badge">4 DEVICE SLOTS</span></div>
+ <div class="camera" id="cameraBox">
+      <video id="cameraVideo" autoplay playsinline muted style="display:none;width:100%;height:100%;object-fit:cover"></video>
+      <div class="cam-icon" id="camIcon">▣</div>
+      <div class="cam-label">CAMERA 01 • PREVIEW</div>
+      <div class="live" id="liveLabel">● STANDBY</div>
+    </div>
+ <div class="camera-controls">
+      <button class="ghost" onclick="connectCamera()">Connect Camera</button>
+      <button class="ghost" onclick="toggleVideoRecording()">● Record Video</button>
+      <button class="ghost" onclick="downloadLastRecording()">Save</button>
+      <button class="ghost" onclick="addCamera()">+ Add</button>
+    </div>
+</section>
+
+<section class="panel">
+ <div class="panel-head"><h2>📡 Situation Log</h2><span class="badge">LOCAL</span></div>
+ <div class="log" id="log">
+  <div class="log-row"><b>[SYSTEM]</b> System initialized.</div>
+  <div class="log-row"><b>[AUDIO]</b> Microphone interface ready.</div>
+  <div class="log-row"><b>[CAM]</b> Camera module waiting for permission.</div>
+ </div>
+</section>
+
+<section class="panel" id="admin">
+ <div class="panel-head"><h2>🛡 Administrator Link</h2><span class="badge" id="adminState">OFFLINE</span></div>
+ <div class="metric"><span>Connection</span><b id="adminConnection">Not connected</b></div>
+ <div class="metric"><span>Transponder</span><b>READY</b></div>
+ <div class="metric"><span>Internet</span><b id="internet">Checking…</b></div>
+ <button class="primary" style="width:100%;margin-top:12px" onclick="simulateConnect()">Connect Admin</button>
+</section>
+
+<section class="panel wide">
+ <div class="panel-head"><h2>💬 Send Question / Safety Request</h2><span class="badge">BACKEND REQUIRED</span></div>
+ <div class="field"><label>QUESTION OR OBSERVATION</label><textarea id="question" placeholder="Describe the situation or ask the AI for information…"></textarea></div>
+ <div class="actions"><button class="primary" onclick="sendQuestion()">Send to AI</button><button class="ghost" onclick="useLocation()">Use Location</button><button class="ghost" onclick="attachMock()">Attach Evidence</button></div>
+</section>
+</div>
+<div class="footer">AI-LANGUAGE_TRANSLATOR • Frontend prototype • Emergency actions shown here are interface placeholders until a verified backend service is connected.</div>
+</section>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal-card">
+ <div class="panel-head"><h2>Frontend Information</h2><button class="icon-btn" onclick="closeModal()">✕</button></div>
+ <p style="color:var(--muted);line-height:1.7;font-size:13px">This single HTML file contains the responsive interface, microphone UI, browser speech-recognition hook, speech output, camera preview placeholder, connection states, logs and demo interactions. which contains a real AI backend, emergency dispatch service, CCTV authentication, administrator server, or social-media streaming credentials.</p>
+ <button class="primary" onclick="closeModal()">Continue</button>
+</div></div>
+
+
+<script>
+"use strict";
+
+/* ============================================================
+   FRONTEND <-> BACKEND INTEGRATION v4
+   ============================================================ */
+
+const $ = id => document.getElementById(id);
+
+const CONFIG = {
+  BACKEND_URL:
+    window.location.protocol === "http:" &&
+    window.location.hostname !== "localhost"
+      ? `${window.location.protocol}//${window.location.hostname}:5000`
+      : "http://localhost:5000",
+
+  STATUS_INTERVAL: 8000,
+  MAX_RECORDING_MB: 50
+};
+
+let recognition = null;
+let recording = false;
+
+let mediaStream = null;
+let audioStream = null;
+let cameraStream = null;
+
+let audioContext = null;
+let analyser = null;
+let sourceNode = null;
+let audioAnimation = null;
+
+let audioRecorder = null;
+let videoRecorder = null;
+
+let audioChunks = [];
+let videoChunks = [];
+
+let lastRecordingBlob = null;
+let lastRecordingMime = "";
+let lastRecordingName = "";
+
+let roomId = null;
+let websocket = null;
+
+let backendOnline = false;
+let userId =
+  localStorage.getItem("translatorUserId") ||
+  crypto.randomUUID();
+
+localStorage.setItem("translatorUserId", userId);
+
+/* ============================================================
+   BASIC UI
+============================================================ */
+
+function toast(msg) {
+  const el = $("toast");
+  if (!el) return;
+
+  el.textContent = msg;
+  el.classList.add("show");
+
+  clearTimeout(window.__toastTimer);
+
+  window.__toastTimer = setTimeout(
+    () => el.classList.remove("show"),
+    2800
+  );
+}
+
+function log(msg, type = "SYSTEM") {
+  const container = $("log");
+  if (!container) return;
+
+  const d = document.createElement("div");
+  d.className = "log-row";
+
+  const b = document.createElement("b");
+  b.textContent = `[${type}]`;
+
+  d.appendChild(b);
+  d.appendChild(
+    document.createTextNode(` ${msg}`)
+  );
+
+  container.prepend(d);
+}
+
+function showSection(id, btn) {
+  document
+    .querySelectorAll(".nav button")
+    .forEach(b => b.classList.remove("active"));
+
+  btn?.classList.add("active");
+
+  document
+    .getElementById(id)
+    ?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+}
+
+function toggleSidebar() {
+  toast("Navigation is available from the bottom bar on mobile.");
+}
+
+function openModal() {
+  $("modal")?.classList.add("show");
+}
+
+function closeModal() {
+  $("modal")?.classList.remove("show");
+}
+
+/* ============================================================
+   BACKEND REQUEST
+============================================================ */
+
+async function api(path, options = {}) {
+  const response = await fetch(
+    `${CONFIG.BACKEND_URL}${path}`,
+    {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "X-User-ID": userId,
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  let data = {};
+
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+      `Backend request failed (${response.status})`
+    );
+  }
+
+  return data;
+}
+
+/* ============================================================
+   BACKEND CONNECTION
+============================================================ */
+
+function setBackendOnline(data) {
+  backendOnline = true;
+
+  $("connectionText").textContent =
+    "Online Mode";
+
+  $("connectionSub").textContent =
+    "Node.js backend connected";
+
+  $("adminState").textContent =
+    "CONNECTED";
+
+  $("adminConnection").textContent =
+    "Backend connected";
+
+  $("internet").textContent =
+    navigator.onLine
+      ? "Online"
+      : "Internet limited";
+
+  document
+    .querySelector(".signal-card")
+    ?.classList.add("online");
+
+  log(
+    "Backend connected successfully.",
+    "NETWORK"
+  );
+}
+
+function setBackendOffline() {
+  backendOnline = false;
+
+  $("connectionText").textContent =
+    "Offline Mode";
+
+  $("connectionSub").textContent =
+    "Frontend running locally";
+
+  $("adminState").textContent =
+    "OFFLINE";
+
+  $("adminConnection").textContent =
+    "Backend not connected";
+
+  $("internet").textContent =
+    navigator.onLine
+      ? "Internet only"
+      : "Offline";
+
+  document
+    .querySelector(".signal-card")
+    ?.classList.remove("online");
+}
+
+async function checkBackendConnection(showToast = false) {
+  try {
+    const data =
+      await api("/api/status");
+
+    if (data.success) {
+      const wasOffline =
+        !backendOnline;
+
+      setBackendOnline(data);
+
+      if (showToast || wasOffline) {
+        toast("Backend is online.");
+      }
+
+      return true;
+    }
+
+    throw new Error("Backend returned an invalid status.");
+  } catch (error) {
+    setBackendOffline();
+
+    if (showToast) {
+      toast(
+        "Backend unavailable. Start Node.js and try again."
+      );
+    }
+
+    return false;
+  }
+}
+
+async function simulateConnect() {
+  toast("Connecting to backend...");
+  await checkBackendConnection(true);
+}
+
+/* ============================================================
+   AUDIO ENGINE
+   ============================================================ */
+
+async function setupAudioEngine(stream) {
+  try {
+    if (audioContext) {
+      await audioContext.close().catch(() => {});
+    }
+
+    audioContext =
+      new (
+        window.AudioContext ||
+        window.webkitAudioContext
+      )();
+
+    if (audioContext.state === "suspended") {
+      await audioContext.resume();
+    }
+
+    analyser =
+      audioContext.createAnalyser();
+
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.78;
+
+    sourceNode =
+      audioContext.createMediaStreamSource(
+        stream
+      );
+
+    sourceNode.connect(analyser);
+
+    startSoundReactiveLogo();
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+function startSoundReactiveLogo() {
+  if (!analyser) return;
+
+  cancelAnimationFrame(
+    audioAnimation
+  );
+
+  const data =
+    new Uint8Array(
+      analyser.fftSize
+    );
+
+  function frame() {
+    if (!analyser) return;
+
+    analyser.getByteTimeDomainData(data);
+
+    let sum = 0;
+
+    for (const value of data) {
+      const normalized =
+        (value - 128) / 128;
+
+      sum +=
+        normalized *
+        normalized;
+    }
+
+    const rms =
+      Math.sqrt(
+        sum / data.length
+      );
+
+    const level =
+      Math.min(
+        100,
+        Math.round(
+          rms * 260
+        )
+      );
+
+    $("audioLevel").textContent =
+      `${level}%`;
+
+    const ring =
+      $("signalRing");
+
+    const core =
+      $("signalCore");
+
+    if (ring) {
+      const scale =
+        1 +
+        Math.min(
+          0.22,
+          level / 450
+        );
+
+      ring.style.transform =
+        `scale(${scale})`;
+
+      ring.style.setProperty(
+        "--sound-level",
+        level
+      );
+
+      ring.style.boxShadow =
+        `0 0 ${20 + level}px rgba(55,216,255,${0.18 + level / 250})`;
+    }
+
+    if (core) {
+      core.style.transform =
+        `scale(${1 + level / 180})`;
+    }
+
+    if (
+      recording ||
+      audioRecorder?.state === "recording" ||
+      videoRecorder?.state === "recording"
+    ) {
+      $("noise").textContent =
+        level > 7
+          ? "Voice detected"
+          : "Listening…";
+    }
+
+    audioAnimation =
+      requestAnimationFrame(frame);
+  }
+
+  frame();
+}
+
+function stopSoundReactiveLogo() {
+  cancelAnimationFrame(
+    audioAnimation
+  );
+
+  audioAnimation = null;
+
+  $("audioLevel").textContent =
+    "0%";
+
+  $("signalRing")?.style.removeProperty(
+    "box-shadow"
+  );
+}
+
+/* ============================================================
+   MICROPHONE
+============================================================ */
+
+async function getMicrophone() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error(
+      "This browser does not support microphone access."
+    );
+  }
+
+  const stream =
+    await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1
+      },
+      video: false
+    });
+
+  audioStream = stream;
+
+  await setupAudioEngine(stream);
+
+  return stream;
+}
+
+function speechLanguageCode(language) {
+  const map = {
+    "Auto Detect": "en-NG",
+    English: "en-NG",
+    Hausa: "ha-NG",
+    Yoruba: "yo-NG",
+    Igbo: "ig-NG",
+    Arabic: "ar-SA",
+    French: "fr-FR",
+    Kanuri: "en-NG"
+  };
+
+  return map[language] || "en-NG";
+}
+
+async function startRecording() {
+  if (recording) {
+    stopRecording();
+    return;
+  }
+
+  try {
+    const stream =
+      await getMicrophone();
+
+    recording = true;
+
+    $("recordStatus").textContent =
+      "LISTENING";
+
+    $("recordingState").textContent =
+      "LISTENING";
+
+    $("micBtn").classList.add(
+      "recording"
+    );
+
+    $("noise").textContent =
+      "Noise suppression active";
+
+    log(
+      "Microphone activated with browser audio processing.",
+      "AUDIO"
+    );
+
+    /* Speech recognition is used for live transcription. */
+    const SR =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SR) {
+      toast(
+        "Microphone is active. Speech recognition is unavailable in this browser."
+      );
+
+      return;
+    }
+
+    recognition =
+      new SR();
+
+    recognition.continuous =
+      true;
+
+    recognition.interimResults =
+      true;
+
+    recognition.lang =
+      speechLanguageCode(
+        $("source").value
+      );
+
+    recognition.onstart =
+      () => {
+        $("recordStatus").textContent =
+          "LISTENING";
+
+        toast(
+          "Microphone listening started."
+        );
+      };
+
+    recognition.onresult =
+      event => {
+        let text = "";
+
+        for (
+          let i =
+            event.resultIndex;
+          i < event.results.length;
+          i++
+        ) {
+          text +=
+            event.results[i][0]
+              .transcript;
+        }
+
+        if (text.trim()) {
+          $("speechInput").value =
+            text.trim();
+        }
+      };
+
+    recognition.onerror =
+      event => {
+        console.warn(
+          "Speech recognition:",
+          event.error
+        );
+
+        if (
+          event.error ===
+            "not-allowed" ||
+          event.error ===
+            "service-not-allowed"
+        ) {
+          toast(
+            "Microphone permission was not granted."
+          );
+        }
+      };
+
+    recognition.onend =
+      () => {
+        if (
+          recording
+        ) {
+          try {
+            recognition.start();
+          } catch {}
+        }
+      };
+
+    try {
+      recognition.start();
+    } catch {}
+
+  } catch (error) {
+    console.error(error);
+
+    toast(
+      error.message ||
+      "Microphone access failed."
+    );
+
+    stopRecording();
+  }
+}
+
+function stopRecording() {
+  recording = false;
+
+  try {
+    recognition?.stop();
+  } catch {}
+
+  recognition = null;
+
+  if (audioStream) {
+    audioStream
+      .getTracks()
+      .forEach(track =>
+        track.stop()
+      );
+
+    audioStream = null;
+  }
+
+  $("recordStatus").textContent =
+    "IDLE";
+
+  $("recordingState").textContent =
+    "READY";
+
+  $("micBtn").classList.remove(
+    "recording"
+  );
+
+  $("noise").textContent =
+    "Noise filter ready";
+
+  log(
+    "Microphone session ended.",
+    "AUDIO"
+  );
+
+  stopSoundReactiveLogo();
+}
+
+/* ============================================================
+   AUDIO RECORDING
+============================================================ */
+
+async function toggleAudioRecording() {
+  if (
+    audioRecorder &&
+    audioRecorder.state === "recording"
+  ) {
+    audioRecorder.stop();
+    return;
+  }
+
+  try {
+    const stream =
+      audioStream ||
+      await getMicrophone();
+
+    audioChunks = [];
+
+    const mime =
+      MediaRecorder.isTypeSupported(
+        "audio/webm;codecs=opus"
+      )
+        ? "audio/webm;codecs=opus"
+        : "audio/webm";
+
+    audioRecorder =
+      new MediaRecorder(
+        stream,
+        { mimeType: mime }
+      );
+
+    audioRecorder.ondataavailable =
+      event => {
+        if (event.data.size) {
+          audioChunks.push(
+            event.data
+          );
+        }
+      };
+
+    audioRecorder.onstart =
+      () => {
+        $("recordingState").textContent =
+          "RECORDING AUDIO";
+
+        $("recordStatus").textContent =
+          "REC";
+
+        toast(
+          "Audio recording started."
+        );
+
+        log(
+          "Audio recording started.",
+          "REC"
+        );
+      };
+
+    audioRecorder.onstop =
+      async () => {
+        const blob =
+          new Blob(
+            audioChunks,
+            {
+              type:
+                audioRecorder.mimeType ||
+                "audio/webm"
+            }
+          );
+
+        rememberRecording(
+          blob,
+          "audio"
+        );
+
+        $("recordingState").textContent =
+          "READY";
+
+        $("recordStatus").textContent =
+          recording
+            ? "LISTENING"
+            : "IDLE";
+
+        toast(
+          "Audio recording ready."
+        );
+
+        log(
+          "Audio recording completed.",
+          "REC"
+        );
+
+        /* Persist metadata when backend is available. */
+        await saveRecordingMetadata(
+          blob,
+          "audio"
+        );
+      };
+
+    audioRecorder.start(250);
+    enforceRecordingLimit();
+
+  } catch (error) {
+    toast(
+      error.message ||
+      "Audio recording could not start."
+    );
+  }
+}
+
+/* ============================================================
+   CAMERA
+============================================================ */
+
+async function connectCamera() {
+  try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error(
+        "Camera access is not supported."
+      );
+    }
+
+    if (cameraStream) {
+      cameraStream
+        .getTracks()
+        .forEach(track =>
+          track.stop()
+        );
+
+      cameraStream = null;
+    }
+
+    cameraStream =
+      await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment",
+          width: {
+            ideal: 1920
+          },
+          height: {
+            ideal: 1080
+          }
+        },
+        audio: false
+      });
+
+    const video =
+      $("cameraVideo");
+
+    video.srcObject =
+      cameraStream;
+
+    video.style.display =
+      "block";
+
+    $("camIcon").style.display =
+      "none";
+
+    $("liveLabel").textContent =
+      "● LIVE";
+
+    $("liveLabel").style.color =
+      "#39e6a4";
+
+    await video.play();
+
+    log(
+      "Camera connected through browser MediaDevices.",
+      "CAM"
+    );
+
+    toast(
+      "Camera connected."
+    );
+  } catch (error) {
+    console.error(error);
+
+    toast(
+      error.message ||
+      "Camera permission was not granted."
+    );
+  }
+}
+
+function addCamera() {
+  toast(
+    "The current browser camera slot is active. Additional hardware cameras require a supported browser/device capture source."
+  );
+
+  log(
+    "Additional camera source requested.",
+    "CAM"
+  );
+}
+
+/* ============================================================
+   VIDEO RECORDING
+============================================================ */
+
+async function toggleVideoRecording() {
+  if (
+    videoRecorder &&
+    videoRecorder.state === "recording"
+  ) {
+    videoRecorder.stop();
+    return;
+  }
+
+  if (!cameraStream) {
+    await connectCamera();
+  }
+
+  if (!cameraStream) return;
+
+  try {
+    videoChunks = [];
+
+    const mime =
+      MediaRecorder.isTypeSupported(
+        "video/webm;codecs=vp9"
+      )
+        ? "video/webm;codecs=vp9"
+        : "video/webm";
+
+    videoRecorder =
+      new MediaRecorder(
+        cameraStream,
+        { mimeType: mime }
+      );
+
+    videoRecorder.ondataavailable =
+      event => {
+        if (event.data.size) {
+          videoChunks.push(
+            event.data
+          );
+        }
+      };
+
+    videoRecorder.onstart =
+      () => {
+        $("recordingState").textContent =
+          "RECORDING VIDEO";
+
+        $("liveLabel").textContent =
+          "● REC";
+
+        $("liveLabel").style.color =
+          "#ff5c73";
+
+        toast(
+          "Video recording started."
+        );
+
+        log(
+          "Camera video recording started.",
+          "REC"
+        );
+      };
+
+    videoRecorder.onstop =
+      async () => {
+        const blob =
+          new Blob(
+            videoChunks,
+            {
+              type:
+                videoRecorder.mimeType ||
+                "video/webm"
+            }
+          );
+
+        rememberRecording(
+          blob,
+          "video"
+        );
+
+        $("recordingState").textContent =
+          "READY";
+
+        $("liveLabel").textContent =
+          "● LIVE";
+
+        $("liveLabel").style.color =
+          "#39e6a4";
+
+        toast(
+          "Video recording ready."
+        );
+
+        log(
+          "Camera video recording completed.",
+          "REC"
+        );
+
+        await saveRecordingMetadata(
+          blob,
+          "video"
+        );
+      };
+
+    videoRecorder.start(250);
+    enforceRecordingLimit();
+
+  } catch (error) {
+    toast(
+      error.message ||
+      "Video recording could not start."
+    );
+  }
+}
+
+/* ============================================================
+   RECORDING STORAGE
+============================================================ */
+
+function rememberRecording(
+  blob,
+  type
+) {
+  lastRecordingBlob =
+    blob;
+
+  lastRecordingMime =
+    blob.type;
+
+  const extension =
+    type === "video"
+      ? "webm"
+      : "webm";
+
+  lastRecordingName =
+    `translator-${type}-${Date.now()}.${extension}`;
+}
+
+function downloadLastRecording() {
+  if (!lastRecordingBlob) {
+    toast(
+      "There is no completed recording to save yet."
+    );
+
+    return;
+  }
+
+  const url =
+    URL.createObjectURL(
+      lastRecordingBlob
+    );
+
+  const a =
+    document.createElement(
+      "a"
+    );
+
+  a.href = url;
+  a.download =
+    lastRecordingName ||
+    "translator-recording.webm";
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(
+    () =>
+      URL.revokeObjectURL(url),
+    1000
+  );
+
+  log(
+    "Recording saved locally.",
+    "REC"
+  );
+}
+
+async function saveRecordingMetadata(
+  blob,
+  type
+) {
+  try {
+    if (!backendOnline) {
+      return;
+    }
+
+    const sizeMB =
+      blob.size /
+      (1024 * 1024);
+
+    const data =
+      await api(
+        "/api/recordings/metadata",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              type,
+
+              filename:
+                lastRecordingName,
+
+              mimeType:
+                blob.type,
+
+              sizeBytes:
+                blob.size,
+
+              sizeMB:
+
+                Number(
+                  sizeMB.toFixed(
+                    3
+                  )
+                ),
+
+              recordedAt:
+                new Date().toISOString()
+            })
+        }
+      );
+
+    if (data.success) {
+      log(
+        "Recording metadata stored in backend.",
+        "DB"
+      );
+    }
+  } catch (error) {
+    console.warn(
+      "Recording metadata:",
+      error.message
+    );
+  }
+}
+
+/* ============================================================
+   TRANSLATION
+============================================================ */
+
+async function translateText() {
+  const text =
+    $("speechInput")
+      .value
+      .trim();
+
+  if (!text) {
+    toast(
+      "Enter or speak a message first."
+    );
+
+    return;
+  }
+
+  const sourceLanguage =
+    $("source").value;
+
+  const targetLanguage =
+    $("target").value;
+
+  if (!backendOnline) {
+    const demo =
+      getOfflineDemo(
+        targetLanguage
+      );
+
+    renderTranslation({
+      ...demo,
+      translation:
+        demo.translation
+    });
+
+    toast(
+      "Offline mode: demo response shown."
+    );
+
+    return;
+  }
+
+  $("result").innerHTML =
+    '<div class="empty">AI is processing your message…</div>';
+
+  try {
+    const response =
+      await api(
+        "/api/translate",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              text,
+
+              sourceLanguage,
+
+              targetLanguage,
+
+              userId
+            })
+        }
+      );
+
+    const data =
+      response.data ||
+      {};
+
+    renderTranslation(
+      data
+    );
+
+    log(
+      "Live backend AI translation completed.",
+      "AI"
+    );
+
+    toast(
+      "Translation completed."
+    );
+
+    if (
+      data.safetyLevel ===
+      "urgent"
+    ) {
+      toast(
+        "Urgent safety classification returned by AI."
+      );
+    }
+
+  } catch (error) {
+    console.error(error);
+
+    toast(
+      error.message ||
+      "Translation request failed."
+    );
+  }
+}
+
+function getOfflineDemo(
+  target
+) {
+  const messages = {
+    English:
+      "Safety information received. Stay calm, move toward a safe public location, and contact appropriate local emergency services when necessary.",
+
+    Hausa:
+      "An karɓi bayanin tsaro. Ka kasance cikin natsuwa kuma ka matsa zuwa wuri mai aminci.",
+
+    Yoruba:
+      "A ti gba alaye aabo. Jẹ́ kí ọkàn rẹ balẹ̀, kí o sì lọ sí ibi tí ó ni ààbò.",
+
+    Igbo:
+      "Anataala ozi nchekwa. Nọrọ jụụ ma gaa ebe dị nchebe.",
+
+    Arabic:
+      "تم استلام معلومات السلامة. ابق هادئًا وتوجه إلى مكان آمن.",
+
+    French:
+      "Les informations de sécurité ont été reçues. Restez calme et dirigez-vous vers un endroit sûr."
+  };
+
+  return {
+    detectedLanguage:
+      "Offline demo",
+
+    translation:
+      messages[target] ||
+      messages.English,
+
+    meaning:
+      "Offline demonstration response.",
+
+    safetyLevel:
+      "normal",
+
+    advice:
+      "Reconnect to the backend for live AI processing."
+  };
+}
+
+function renderTranslation(
+  data
+) {
+  const translation =
+    data.translation ||
+    data.translatedText ||
+    "";
+
+  const meaning =
+    data.meaning ||
+    "";
+
+  const advice =
+    data.advice ||
+    "";
+
+  const safety =
+    data.safetyLevel ||
+    "normal";
+
+  $("result").innerHTML =
+    `<b>${escapeHTML(
+      $("target").value
+    )} response</b><br><br>` +
+    `${escapeHTML(translation)}` +
+    (meaning
+      ? `<br><br><small>${escapeHTML(meaning)}</small>`
+      : "") +
+    (advice
+      ? `<br><br><strong>Safety: ${escapeHTML(
+          safety
+        )}</strong><br>${escapeHTML(
+          advice
+        )}`
+      : "");
+
+  $("detected").textContent =
+    data.detectedLanguage ||
+    "—";
+
+  $("confidence").textContent =
+    safety === "urgent"
+      ? "Safety review"
+      : "AI";
+
+  $("clarity").textContent =
+    "AI processed";
+}
+
+function escapeHTML(
+  value
+) {
+  return String(
+    value ?? ""
+  )
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+/* ============================================================
+   SPEECH OUTPUT
+============================================================ */
+
+function speakResult() {
+  const text =
+    $("result")
+      .innerText
+      .trim();
+
+  if (
+    !text ||
+    text.includes(
+      "Translated / AI-generated response"
+    )
+  ) {
+    toast(
+      "Nothing to speak yet."
+    );
+
+    return;
+  }
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+    toast(
+      "Speech output is unavailable."
+    );
+
+    return;
+  }
+
+  speechSynthesis.cancel();
+
+  const utterance =
+    new SpeechSynthesisUtterance(
+      text
+    );
+
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+
+  speechSynthesis.speak(
+    utterance
+  );
+
+  log(
+    "AI response sent to browser speech output.",
+    "AUDIO"
+  );
+}
+
+/* ============================================================
+   DEMO
+============================================================ */
+
+async function runDemo() {
+  $("speechInput").value =
+    "Please translate this safety message.";
+
+  $("source").value =
+    "Auto Detect";
+
+  $("target").value =
+    "English";
+
+  if (!backendOnline) {
+    await checkBackendConnection();
+  }
+
+  await translateText();
+
+  if (
+    $("result").innerText
+      .trim()
+      .length
+  ) {
+    setTimeout(
+      () => speakResult(),
+      300
+    );
+  }
+
+  log(
+    backendOnline
+      ? "Live backend demo executed."
+      : "Offline demonstration executed.",
+    "DEMO"
+  );
+}
+
+/* ============================================================
+   QUESTIONS
+============================================================ */
+
+async function sendQuestion() {
+  const question =
+    $("question")
+      .value
+      .trim();
+
+  if (!question) {
+    toast(
+      "Enter a question first."
+    );
+
+    return;
+  }
+
+  $("speechInput").value =
+    question;
+
+  await translateText();
+
+  showSection(
+    "translator"
+  );
+
+  log(
+    "Question sent through translator AI.",
+    "AI"
+  );
+}
+
+/* ============================================================
+   LOCATION / EMERGENCY
+============================================================ */
+
+function getLocation() {
+  return new Promise(
+    (resolve, reject) => {
+      if (
+        !navigator.geolocation
+      ) {
+        reject(
+          new Error(
+            "Geolocation is unavailable."
+          )
+        );
+
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        position =>
+          resolve(
+            position.coords
+          ),
+        error =>
+          reject(error),
+        {
+          enableHighAccuracy:
+            true,
+
+          timeout:
+            10000,
+
+          maximumAge:
+            30000
+        }
+      );
+    }
+  );
+}
+
+async function useLocation() {
+  try {
+    const coords =
+      await getLocation();
+
+    toast(
+      `Location received: ${coords.latitude.toFixed(
+        5
+      )}, ${coords.longitude.toFixed(5)}`
+    );
+
+    log(
+      "Browser location permission received.",
+      "GPS"
+    );
+  } catch {
+    toast(
+      "Location permission was not granted."
+    );
+  }
+}
+
+async function emergency() {
+  try {
+    const coords =
+      await getLocation();
+
+    const countryCode =
+      "NG";
+
+    const report =
+      await api(
+        "/api/emergency/prepare",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              userId,
+
+              latitude:
+                coords.latitude,
+
+              longitude:
+                coords.longitude,
+
+              countryCode,
+
+              language:
+                $("source").value,
+
+              message:
+                $("question")
+                  .value
+                  .trim() ||
+                $("speechInput")
+                  .value
+                  .trim() ||
+                "Emergency assistance requested.",
+
+              device:
+                navigator.userAgent
+            })
+        }
+      );
+
+    if (report.success) {
+      toast(
+        "Emergency report prepared and sent to the backend."
+      );
+
+      log(
+        "Emergency report prepared with current location.",
+        "ALERT"
+      );
+    }
+  } catch (error) {
+    toast(
+      error.message ||
+      "Emergency report could not be prepared."
+    );
+
+    log(
+      "Emergency action could not reach backend.",
+      "ALERT"
+    );
+  }
+}
+
+/* ============================================================
+   EVIDENCE
+============================================================ */
+
+async function attachMock() {
+  toast(
+    "Choose a recording first, then use the Save button. Browser file upload can be added through the backend storage route."
+  );
+
+  log(
+    "Evidence interface opened.",
+    "EVIDENCE"
+  );
+}
+
+/* ============================================================
+   REALTIME ROOM
+============================================================ */
+
+async function createRealtimeRoom() {
+  try {
+    const data =
+      await api(
+        "/api/rooms",
+        {
+          method: "POST",
+
+          body:
+            JSON.stringify({
+              name:
+                "Citizen Operator",
+
+              userId
+            })
+        }
+      );
+
+    roomId =
+      data.roomId;
+
+    connectRealtime(
+      roomId
+    );
+
+    return roomId;
+  } catch (error) {
+    toast(
+      error.message ||
+      "Realtime room creation failed."
+    );
+
+    return null;
+  }
+}
+
+function connectRealtime(
+  id
+) {
+  if (!id) return;
+
+  try {
+    websocket?.close();
+  } catch {}
+
+  const wsUrl =
+    CONFIG.BACKEND_URL
+      .replace(
+        /^http/,
+        "ws"
+      ) +
+    `/ws?room=${encodeURIComponent(
+      id
+    )}&name=Citizen%20Operator&userId=${encodeURIComponent(
+      userId
+    )}`;
+
+  websocket =
+    new WebSocket(
+      wsUrl
+    );
+
+  websocket.onopen =
+    () => {
+      log(
+        "Realtime communication channel connected.",
+        "WS"
+      );
+    };
+
+  websocket.onmessage =
+    event => {
+      try {
+        const message =
+          JSON.parse(
+            event.data
+          );
+
+        if (
+          message.type ===
+          "translation-event"
+        ) {
+          log(
+            "Realtime translation event received.",
+            "WS"
+          );
+        }
+
+        if (
+          message.type ===
+          "safety-event"
+        ) {
+          toast(
+            "Realtime safety event received."
+          );
+        }
+      } catch {}
+    };
+
+  websocket.onerror =
+    () => {
+      log(
+        "Realtime communication error.",
+        "WS"
+      );
+    };
+
+  websocket.onclose =
+    () => {
+      log(
+        "Realtime communication channel closed.",
+        "WS"
+      );
+    };
+}
+
+/* ============================================================
+   AUDIO TEST
+============================================================ */
+
+function testAudio() {
+  const text =
+    "Audio output system is ready.";
+
+  if (
+    "speechSynthesis" in window
+  ) {
+    speechSynthesis.cancel();
+
+    speechSynthesis.speak(
+      new SpeechSynthesisUtterance(
+        text
+      )
+    );
+  }
+
+  log(
+    "Audio output test executed.",
+    "AUDIO"
+  );
+}
+
+/* ============================================================
+   CLEAR
+============================================================ */
+
+function clearAll() {
+  $("speechInput").value =
+    "";
+
+  $("question").value =
+    "";
+
+  $("result").innerHTML =
+    '<div class="empty">Translated / AI-generated response will appear here.</div>';
+
+  $("detected").textContent =
+    "—";
+
+  $("confidence").textContent =
+    "—";
+
+  toast(
+    "Cleared."
+  );
+}
+
+
+/* ============================================================
+   RECORDING SAFETY GUARD
+============================================================ */
+
+function enforceRecordingLimit() {
+  const MAX_MS = 15 * 60 * 1000;
+
+  clearTimeout(window.__recordingLimitTimer);
+
+  window.__recordingLimitTimer =
+    setTimeout(() => {
+      if (
+        audioRecorder?.state === "recording"
+      ) {
+        audioRecorder.stop();
+        toast("15-minute audio recording limit reached.");
+      }
+
+      if (
+        videoRecorder?.state === "recording"
+      ) {
+        videoRecorder.stop();
+        toast("15-minute video recording limit reached.");
+      }
+    }, MAX_MS);
+}
+
+/* ============================================================
+   ONLINE/OFFLINE EVENTS
+============================================================ */
+
+$("internet").textContent =
+  navigator.onLine
+    ? "Online"
+    : "Offline";
+
+window.addEventListener(
+  "online",
+  () => {
+    $("internet").textContent =
+      "Online";
+
+    log(
+      "Browser reports internet online.",
+      "NETWORK"
+    );
+
+    checkBackendConnection();
+  }
+);
+
+window.addEventListener(
+  "offline",
+  () => {
+    $("internet").textContent =
+      "Offline";
+
+    setBackendOffline();
+
+    log(
+      "Browser reports internet offline.",
+      "NETWORK"
+    );
+  }
+);
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  async () => {
+    log(
+      "Frontend initialized.",
+      "SYSTEM"
+    );
+
+    await checkBackendConnection();
+
+    setInterval(
+      () =>
+        checkBackendConnection(),
+      CONFIG.STATUS_INTERVAL
+    );
+  }
+);
+
+
+/* ============================================================
+   RECORDING PREVIEW + REAL FILE UPLOAD
+============================================================ */
+
+function showRecordingPreview(blob, type) {
+  const box = $("recordingPreview");
+  const audio = $("audioPreview");
+  const video = $("videoPreview");
+  const title = $("previewTitle");
+
+  if (!box) return;
+
+  const url = URL.createObjectURL(blob);
+
+  audio.pause();
+  video.pause();
+
+  audio.removeAttribute("src");
+  video.removeAttribute("src");
+
+  if (type === "video") {
+    audio.style.display = "none";
+    video.style.display = "block";
+    video.src = url;
+    title.textContent = "Video recording ready";
+  } else {
+    video.style.display = "none";
+    audio.style.display = "block";
+    audio.src = url;
+    title.textContent = "Audio recording ready";
+  }
+
+  box.dataset.type = type;
+  box.classList.add("show");
+}
+
+function closeRecordingPreview() {
+  const box = $("recordingPreview");
+  const audio = $("audioPreview");
+  const video = $("videoPreview");
+
+  audio?.pause();
+  video?.pause();
+
+  if (audio) audio.removeAttribute("src");
+  if (video) video.removeAttribute("src");
+
+  box?.classList.remove("show");
+}
+
+function rememberRecording(blob, type) {
+  lastRecordingBlob = blob;
+  lastRecordingMime = blob.type;
+
+  const ext =
+    type === "video"
+      ? "webm"
+      : "webm";
+
+  lastRecordingName =
+    `translator-${type}-${Date.now()}.${ext}`;
+
+  window.__lastRecordingType = type;
+
+  showRecordingPreview(blob, type);
+}
+
+async function uploadLastRecording() {
+  if (!lastRecordingBlob) {
+    toast("No recording is available.");
+    return;
+  }
+
+  if (!backendOnline) {
+    toast("Backend is offline. Start your Node.js server first.");
+    return;
+  }
+
+  const progress = $("uploadProgress");
+  const bar = progress?.querySelector("i");
+
+  try {
+    if (progress) progress.style.display = "block";
+    if (bar) bar.style.width = "5%";
+
+    /*
+      The backend should expose:
+      POST /api/recordings/upload
+      multipart/form-data:
+        file
+        userId
+        type
+        recordedAt
+    */
+
+    const form = new FormData();
+
+    form.append(
+      "file",
+      lastRecordingBlob,
+      lastRecordingName
+    );
+
+    form.append(
+      "userId",
+      userId
+    );
+
+    form.append(
+      "type",
+      window.__lastRecordingType || "audio"
+    );
+
+    form.append(
+      "recordedAt",
+      new Date().toISOString()
+    );
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.open(
+      "POST",
+      `${CONFIG.BACKEND_URL}/api/recordings/upload`
+    );
+
+    xhr.setRequestHeader(
+      "X-User-ID",
+      userId
+    );
+
+    xhr.upload.onprogress = event => {
+      if (!event.lengthComputable) return;
+
+      const percent =
+        Math.min(
+          99,
+          Math.round(
+            event.loaded /
+            event.total *
+            100
+          )
+        );
+
+      if (bar) {
+        bar.style.width =
+          `${percent}%`;
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        throw new Error(
+          `Upload failed (${xhr.status})`
+        );
+      }
+
+      if (bar) bar.style.width = "100%";
+
+      let result = {};
+
+      try {
+        result = JSON.parse(xhr.responseText);
+      } catch {}
+
+      toast(
+        result.message ||
+        "Recording uploaded successfully."
+      );
+
+      log(
+        "Real recording uploaded to backend.",
+        "UPLOAD"
+      );
+
+      setTimeout(() => {
+        if (progress) progress.style.display = "none";
+      }, 1000);
+    };
+
+    xhr.onerror = () => {
+      throw new Error(
+        "Network error while uploading recording."
+      );
+    };
+
+    xhr.send(form);
+
+  } catch (error) {
+    console.error(error);
+
+    toast(
+      error.message ||
+      "Recording upload failed."
+    );
+
+    if (progress) {
+      progress.style.display = "none";
+    }
+  }
+}
+
+/* ============================================================
+   ENHANCED BACKEND STATUS UI
+============================================================ */
+
+function updateFrontendStatusUI() {
+  const bar = $("frontendStatusBar");
+  const text = $("frontendStatusText");
+
+  if (!bar || !text) return;
+
+  if (backendOnline) {
+    bar.classList.add("online");
+    text.textContent =
+      "Backend online";
+  } else if (navigator.onLine) {
+    bar.classList.remove("online");
+    text.textContent =
+      "Backend offline";
+  } else {
+    bar.classList.remove("online");
+    text.textContent =
+      "Internet offline";
+  }
+}
+
+/* Patch the status functions without changing their API. */
+const __originalSetBackendOnline =
+  setBackendOnline;
+
+setBackendOnline = function(data) {
+  __originalSetBackendOnline(data);
+  updateFrontendStatusUI();
+};
+
+const __originalSetBackendOffline =
+  setBackendOffline;
+
+setBackendOffline = function() {
+  __originalSetBackendOffline();
+  updateFrontendStatusUI();
+};
+
+/* ============================================================
+   IMPROVED DEMO
+============================================================ */
+
+async function runDemo() {
+  toast("Running full live demo…");
+
+  const online =
+    await checkBackendConnection(true);
+
+  $("speechInput").value =
+    "Please translate this emergency safety message.";
+
+  $("source").value =
+    "Auto Detect";
+
+  $("target").value =
+    "English";
+
+  if (online) {
+    await translateText();
+  } else {
+    const demo =
+      getOfflineDemo("English");
+
+    renderTranslation(demo);
+
+    toast(
+      "Backend unavailable: offline demo response used."
+    );
+  }
+
+  try {
+    speakResult();
+  } catch {}
+
+  /* Start the microphone visualizer when permission is already
+     available; otherwise don't interrupt the demo. */
+  if (!audioStream) {
+    try {
+      await getMicrophone();
+      $("noise").textContent =
+        "Audio visualizer active";
+    } catch {}
+  }
+
+  log(
+    online
+      ? "Full live demo completed with backend."
+      : "Full offline demo completed.",
+    "DEMO"
+  );
+}
+
+/* ============================================================
+   INITIAL UI PATCH
+============================================================ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateFrontendStatusUI();
+
+  /* Make recording controls clearly reflect their current state. */
+  const originalDownload =
+    window.downloadLastRecording;
+
+  window.downloadLastRecording =
+    function() {
+      if (!lastRecordingBlob) {
+        toast("There is no completed recording to save yet.");
+        return;
+      }
+
+      originalDownload();
+
+      log(
+        "Recording downloaded.",
+        "FILE"
+      );
+    };
+});
+
+/* ============================================================
+   CLEANUP
+============================================================ */
+
+window.addEventListener(
+  "beforeunload",
+  () => {
+    try {
+      recognition?.stop();
+    } catch {}
+
+    try {
+      websocket?.close();
+    } catch {}
+
+    [
+      audioStream,
+      cameraStream
+    ]
+      .filter(Boolean)
+      .forEach(stream =>
+        stream
+          .getTracks()
+          .forEach(track =>
+            track.stop()
+          )
+      );
+  }
+);
+</script>
+
+
+<style>
+/* ============================================================
+   FULL UPGRADE PATCH
+============================================================ */
+#frontendStatusBar{
+  position:fixed;right:18px;bottom:18px;z-index:9998;
+  display:flex;align-items:center;gap:9px;
+  padding:10px 13px;border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;background:rgba(7,14,23,.88);
+  backdrop-filter:blur(14px);box-shadow:0 10px 35px rgba(0,0,0,.35);
+  font-size:12px;color:#cbd5e1
+}
+#frontendStatusDot{
+  width:9px;height:9px;border-radius:50%;background:#ff5c73;
+  box-shadow:0 0 12px rgba(255,92,115,.8);transition:.25s
+}
+#frontendStatusBar.online #frontendStatusDot{
+  background:#39e6a4;box-shadow:0 0 14px rgba(57,230,164,.9)
+}
+#recordingPreview{
+  position:fixed;left:18px;bottom:18px;z-index:9997;
+  width:min(360px,calc(100vw - 36px));display:none;
+  padding:14px;border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;background:rgba(7,14,23,.94);
+  backdrop-filter:blur(16px);box-shadow:0 15px 50px rgba(0,0,0,.45)
+}
+#recordingPreview.show{display:block}
+#recordingPreview audio,#recordingPreview video{width:100%;border-radius:12px;margin-top:9px}
+#recordingPreview .rp-head{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;color:#e2e8f0
+}
+#recordingPreview button{
+  border:0;border-radius:9px;padding:7px 10px;
+  background:#172333;color:#dbeafe;cursor:pointer
+}
+#uploadProgress{
+  height:4px;border-radius:99px;background:#152131;overflow:hidden;
+  margin-top:10px;display:none
+}
+#uploadProgress i{display:block;height:100%;width:0;background:#39e6a4;transition:width .2s}
+</style>
+
+<div id="frontendStatusBar">
+  <span id="frontendStatusDot"></span>
+  <span id="frontendStatusText">Connecting…</span>
+</div>
+
+<div id="recordingPreview">
+  <div class="rp-head">
+    <strong id="previewTitle">Recording ready</strong>
+    <button onclick="closeRecordingPreview()">×</button>
+  </div>
+  <audio id="audioPreview" controls style="display:none"></audio>
+  <video id="videoPreview" controls playsinline style="display:none"></video>
+  <div id="uploadProgress"><i></i></div>
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button onclick="downloadLastRecording()">Download</button>
+    <button onclick="uploadLastRecording()">Upload to backend</button>
+  </div>
+</div>
+
+</body>
+</html>

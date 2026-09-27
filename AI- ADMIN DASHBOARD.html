@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#07111f">
+<meta name="description" content="AI Language Translator and Safety Communication frontend dashboard.">
+<title>AI Language Translator — Safety Communication</title>
+<link rel="icon" href="AI.png">
+<style>
+:root{
+  --bg:#050914;--panel:#0b1424;--panel2:#101c30;--line:rgba(255,255,255,.09);
+  --text:#edf5ff;--muted:#8fa4bd;--cyan:#37d8ff;--blue:#4f7cff;--green:#39e6a4;
+  --amber:#ffc857;--red:#ff5c73;--shadow:0 24px 70px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+ margin:0;background:
+ radial-gradient(circle at 15% 0%,rgba(55,216,255,.12),transparent 30%),
+ radial-gradient(circle at 90% 15%,rgba(79,124,255,.14),transparent 30%),var(--bg);
+ color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+ min-height:100vh
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:265px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:22px 16px;border-right:1px solid var(--line);background:rgba(5,9,20,.82);backdrop-filter:blur(20px);z-index:20}
+.brand{display:flex;align-items:center;gap:12px;padding:8px 9px 24px}
+.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-weight:900;color:#00131b;
+ background:linear-gradient(135deg,#a7f4ff,#37d8ff,#4f7cff);box-shadow:0 0 30px rgba(55,216,255,.35);animation:pulse 3s infinite}
+.brand strong{display:block;font-size:14px;letter-spacing:.08em}.brand span{font-size:11px;color:var(--muted)}
+.nav{display:grid;gap:7px}.nav button{border:1px solid transparent;background:transparent;color:#aebed1;text-align:left;padding:12px 13px;border-radius:12px;display:flex;gap:11px;align-items:center}
+.nav button:hover,.nav button.active{background:rgba(55,216,255,.08);border-color:rgba(55,216,255,.14);color:#fff}
+.side-status{position:absolute;left:16px;right:16px;bottom:20px;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 14px var(--green);margin-right:8px}
+.main{min-width:0}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--line);background:rgba(5,9,20,.55);backdrop-filter:blur(18px);position:sticky;top:0;z-index:15}
+.menu{display:none}.top-title small{display:block;color:var(--muted);font-size:11px}.top-title strong{font-size:17px}
+.top-actions{display:flex;gap:9px;align-items:center}.icon-btn,.primary,.danger,.ghost{border:1px solid var(--line);border-radius:11px;padding:10px 13px;background:rgba(255,255,255,.04);color:#fff}
+.primary{background:linear-gradient(135deg,#1bbfe9,#4f7cff);border:0;box-shadow:0 8px 24px rgba(55,216,255,.18)}
+.danger{background:rgba(255,92,115,.1);color:#ff9aaa;border-color:rgba(255,92,115,.25)}
+.content{padding:25px;max-width:1500px;margin:auto}.hero{display:grid;grid-template-columns:1.5fr .8fr;gap:18px;margin-bottom:18px}
+.hero-card,.panel{background:linear-gradient(145deg,rgba(16,28,48,.94),rgba(8,15,28,.94));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+.hero-card{padding:28px;position:relative;overflow:hidden}.hero-card:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-80px;top:-80px;background:rgba(55,216,255,.1);filter:blur(10px)}
+.eyebrow{color:var(--cyan);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(27px,4vw,48px);line-height:1.03;margin:10px 0}.hero p{color:var(--muted);max-width:760px;line-height:1.7;margin-bottom:20px}
+.hero-buttons{display:flex;flex-wrap:wrap;gap:9px}.signal-card{padding:22px;display:flex;flex-direction:column;justify-content:center}
+.signal-ring{width:96px;height:96px;border-radius:50%;margin:0 auto 16px;display:grid;place-items:center;background:radial-gradient(circle,#0c2432 48%,transparent 50%),conic-gradient(var(--cyan),#ff4f4f,var(--green),var(--cyan));animation:spin 8s linear infinite}
+.signal-ring span{font-size:25px;animation:spin 8s linear infinite reverse}.signal-card{text-align:center}.signal-card h3{margin:4px 0}.signal-card p{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:1.05fr 1fr .85fr;gap:18px}.panel{padding:20px}.panel h2{font-size:15px;margin:0 0 16px}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.field{display:grid;gap:7px;margin-bottom:13px}.field label{font-size:11px;color:var(--muted);font-weight:700}.field input,.field select,.field textarea{
+ width:100%;border:1px solid var(--line);background:#07101e;color:#fff;border-radius:11px;padding:11px;outline:none
+}.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(55,216,255,.55);box-shadow:0 0 0 3px rgba(55,216,255,.08)}
+textarea{resize:vertical;min-height:112px}.wide{grid-column:1/-1}
+.mic{display:grid;grid-template-columns:1fr auto;gap:9px}.mic button{width:50px;border-radius:11px;border:1px solid rgba(55,216,255,.3);background:rgba(55,216,255,.1);color:var(--cyan)}
+.mic button.recording{animation:record 1s infinite;background:rgba(255,92,115,.15);color:#ff8091;border-color:#ff5c73}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.translation{min-height:190px;padding:17px;border-radius:15px;background:#06101c;border:1px solid var(--line);line-height:1.65;color:#d9e8f8}
+.translation .empty{color:#71859d}.language-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.badges{display:flex;gap:7px;flex-wrap:wrap}.badge{padding:6px 8px;border-radius:99px;font-size:10px;background:rgba(55,216,255,.08);color:#8deaff;border:1px solid rgba(55,216,255,.15)}
+.metric{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.metric:last-child{border:0}.metric span{color:var(--muted)}
+.camera{height:235px;border-radius:15px;background:linear-gradient(145deg,#081525,#02060d);border:1px solid var(--line);display:grid;place-items:center;position:relative;overflow:hidden}
+.camera:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 7px,rgba(55,216,255,.025) 8px 9px)}
+.cam-icon{font-size:42px;opacity:.8}.cam-label{position:absolute;top:11px;left:12px;font-size:10px;color:#9fb3c9}.live{position:absolute;right:12px;top:10px;color:#ff6b7f;font-size:10px;font-weight:800}.camera-controls{display:flex;gap:7px;margin-top:9px}
+.log{max-height:205px;overflow:auto;font-family:ui-monospace,monospace;font-size:10px}.log-row{padding:8px 0;border-bottom:1px solid var(--line);color:#9db1c7}.log-row b{color:var(--cyan)}
+.footer{text-align:center;color:#64778e;font-size:10px;padding:25px}
+.toast{position:fixed;right:20px;bottom:20px;z-index:99;background:#101e31;border:1px solid rgba(55,216,255,.25);box-shadow:var(--shadow);padding:13px 16px;border-radius:13px;transform:translateY(130px);opacity:0;transition:.3s;max-width:330px;font-size:12px}.toast.show{transform:none;opacity:1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(8px);display:none;place-items:center;z-index:80;padding:20px}.modal.show{display:grid}.modal-card{width:min(560px,100%);background:#0b1424;border:1px solid var(--line);border-radius:20px;padding:22px}
+@keyframes pulse{50%{box-shadow:0 0 42px rgba(55,216,255,.58)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes record{50%{box-shadow:0 0 0 8px rgba(255,92,115,.08)}}
+@media(max-width:1050px){.app{grid-template-columns:78px 1fr}.sidebar{padding:18px 10px}.brand div:not(.logo),.nav button span,.side-status{display:none}.brand{justify-content:center}.nav button{justify-content:center}.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.wide{grid-column:1/-1}}
+@media(max-width:720px){.app{display:block}.sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;padding:7px;border-right:0;border-top:1px solid var(--line);z-index:40}.brand,.side-status{display:none}.nav{display:flex;justify-content:space-around}.nav button{padding:9px}.nav button span{display:none}.topbar{padding:0 14px;height:65px}.menu{display:block}.top-title strong{font-size:14px}.top-actions .ghost{display:none}.content{padding:14px 12px 80px}.hero-card,.panel{border-radius:17px}.hero-card{padding:20px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}.language-row{grid-template-columns:1fr}.signal-card{min-height:190px}}
+</style>
+</head>
+<body>
+    <div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo"><img src="AI.png" width="48px" height="48px" style="border-radius: 15px;"></div><div><strong>LANGUAGE AI</strong><span>SAFETY COMMUNICATION</span></div></div>
+  <nav class="nav">
+    <button class="active" onclick="showSection('dashboard',this)">◈ <span>Admin Dashboard</span></button>
+    <button onclick="showSection('translator',this)">◎ <span>Translator</span></button>
+    <button onclick="showSection('audio',this)">◉ <span>Audio</span></button>
+    <button onclick="showSection('camera',this)">▣ <span>Camera</span></button>
+    <button onclick="showSection('admin',this)">⌁ <span>User Connection</span></button>
+  </nav>
+  <div class="side-status"><span class="dot"></span><b style="font-size:11px">PRODUCTION READY</b><div style="font-size:10px;color:var(--muted);margin-top:5px">Configuration Successful</div></div>
+</aside>
+<main class="main">
+<header class="topbar">
+  <button class="icon-btn menu" onclick="toggleSidebar()">☰</button>
+  <div class="top-title"><small>AI-LANGUAGE_TRANSLATOR</small><strong>Safety Communication Console</strong></div>
+  <div class="top-actions"><button class="ghost" onclick="openModal()">System Info</button><button class="primary" onclick="simulateConnect()">Connect</button></div>
+</header>
+<section class="content" id="dashboard">
+<div class="hero">
+ <div class="hero-card">
+  <div class="eyebrow"> Multilingual safety interface</div>
+  <h1>Listen. Understand. Communicate.</h1>
+  <p>Frontend dashboard for microphone input, language detection, translation, audio output, camera monitoring and administrator communication. Backend AI, emergency APIs and live streaming can be connected later.</p>
+  <div class="hero-buttons"><button class="primary" onclick="startRecording()">🎙 Start Listening</button><button class="ghost" onclick="runDemo()">▶ Run Demo</button>
+  </div>
+  </div>
+  <div class="hero-card signal-card"><div class="signal-ring"><span>◉</span></div><h3 id="connectionText">Offline Mode</h3><p id="connectionSub">Waiting for backend / internet connection</p><div class="badges"><span class="badge">MIC READY</span><span class="badge">AI UI READY</span><span class="badge">CAMERA READY</span></div></div>
+</div>
+<div class="grid">
+<section class="panel" id="translator">
+ <div class="panel-head"><h2>🎙 Voice Translator</h2><span class="badge" id="recordStatus">IDLE</span></div>
+ <div class="field"><label>SOURCE LANGUAGE</label><select id="source"><option>Auto Detect</option><option>English</option><option>Hausa</option><option>Yoruba</option><option>Igbo</option><option>Arabic</option><option>French</option><option>Kanuri</option></select></div>
+ <div class="field"><label>MICROPHONE INPUT</label><div class="mic"><input id="speechInput" placeholder="Use microphone or type a message…"><button id="micBtn" onclick="startRecording()">🎙</button></div></div>
+ <div class="field"><label>TRANSLATE TO</label><select id="target"><option>English</option><option>Hausa</option><option>Yoruba</option><option>Igbo</option><option>Arabic</option><option>French</option></select></div>
+ <div class="actions"><button class="primary" onclick="translateText()">Translate</button><button class="ghost" onclick="speakResult()">🔊 Speak</button><button class="ghost" onclick="clearAll()">Clear</button></div>
+</section>
+
+<section class="panel">
+ <div class="panel-head"><h2>AI Response</h2><span class="badge">SAFE OUTPUT</span></div>
+ <div class="translation" id="result"><div class="empty">Translated / AI-generated response will appear here.</div></div>
+ <div class="metric"><span>Detected language</span><b id="detected">—</b></div>
+ <div class="metric"><span>Confidence</span><b id="confidence">—</b></div>
+ <div class="metric"><span>Noise state</span><b id="noise">Awaiting audio</b></div>
+</section>
+
+<section class="panel" id="audio">
+ <div class="panel-head"><h2>🔊 Audio Processing</h2><span class="badge">LOCAL UI</span></div>
+ <div class="metric"><span>Noise suppression</span><b>ON</b></div>
+ <div class="metric"><span>Compressor</span><b>ON</b></div>
+ <div class="metric"><span>Limiter</span><b>ON</b></div>
+ <div class="metric"><span>Voice clarity</span><b id="clarity">92%</b></div>
+ <div class="field" style="margin-top:15px"><label>OUTPUT DEVICE</label><select><option>Default Speaker</option><option>Bluetooth Audio</option><option>USB Audio</option></select></div>
+ <button class="primary" style="width:100%" onclick="testAudio()">Test Output</button>
+</section>
+
+<section class="panel" id="camera">
+ <div class="panel-head"><h2>📹 Security Camera</h2><span class="badge">1 DEVICE SLOTS</span></div>
+ <div class="camera"><video id="liveFeed" style="display: none; width:auto;height:auto;" autoplay playsinline muted></video><div class="cam-icon" id="cram" style="display: none;">▣</div><div class="cam-label">ADMIN CAM • PREVIEW</div><div class="live">● LIVE UI</div></div>
+ <div class="camera-controls"><button class="ghost" onclick="document.getElementById('cram').style.display='block'">Share User Scenes (SUS)</button><button class="ghost"  onclick="document.getElementById('liveFeed').style.display='block'" >User Cam</button></div>
+</section>
+
+<section class="panel">
+ <div class="panel-head"><h2>📡 Situation Log</h2><span class="badge">LOCAL</span></div>
+ <div class="log" id="log">
+  <div class="log-row"><b>[SYSTEM]</b> System initialized.</div>
+  <div class="log-row"><b>[AUDIO]</b> Microphone interface ready.</div>
+  <div class="log-row"><b>[CAM]</b> Camera module waiting for permission.</div>
+ </div>
+</section>
+
+<section class="panel" id="admin">
+ <div class="panel-head"><h2>👁‍🗨 User Request</h2><span class="badge" id="adminState">OFFLINE</span></div>
+ <div class="metric"><span>Connection</span><b id="adminConnection">Not connected</b></div>
+ <div class="metric"><span>Transponder</span><b>READY</b></div>
+ <div class="metric"><span>Internet</span><b id="internet">Checking…</b></div>
+ <button class="primary" style="width:100%;margin-top:12px; font-weight: 900;" onclick="simulateConnect()">Accept Connection</button>
+</section>
+<section class="panel wide">
+ <div class="panel-head"><h2>💬 Send Question / Safety Request</h2><span class="badge">BACKEND REQUIRED</span></div>
+ <div class="field"><label>QUESTION OR OBSERVATION</label><textarea id="question" placeholder="Describe the situation or ask the AI for information…"></textarea></div>
+ <div class="actions"><button class="primary" onclick="sendQuestion()">Send to AI</button><button class="ghost" onclick="useLocation()">Use Location</button><button class="ghost" onclick="attachMock()">Attach Evidence</button></div>
+</section>
+</div>
+<div class="footer">AI-LANGUAGE_TRANSLATOR • Frontend prototype • Emergency actions shown here are interface placeholders until a verified backend service is connected.</div>
+</section>
+</main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal-card">
+ <div class="panel-head"><h2>Frontend Information</h2><button class="icon-btn" onclick="closeModal()">✕</button></div>
+ <p style="color:var(--muted);line-height:1.7;font-size:13px">This single HTML file contains the responsive interface, microphone UI, browser speech-recognition hook, speech output, camera preview placeholder, connection states, logs and demo interactions. which contains a real AI backend, emergency dispatch service, CCTV authentication, administrator server, or social-media streaming credentials.</p>
+ <button class="primary" onclick="closeModal()">Continue</button>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const video =
+$("liveFeed");
+
+/* =========================================
+   INIT ENGINE
+========================================= */
+
+window.addEventListener(
+"DOMContentLoaded",
+initializeEngine
+);
+
+async function initializeEngine(){
+
+  updateStatus(
+    "Initializing Ultra AI Camera...",
+    "#00ffd5"
+  );
+
+  try{
+
+    stream =
+    await navigator
+    .mediaDevices
+    .getUserMedia({
+
+      video:{
+
+        facingMode:"user",
+
+        width:{
+          ideal:CONFIG.width
+        },
+
+        height:{
+          ideal:CONFIG.height
+        },
+
+        frameRate:{
+          ideal:30
+        }
+
+      },
+
+      audio:false
+
+    });
+
+    video.srcObject = stream;
+
+    await video.play();
+
+    applyLiveVideoEnhancement();
+
+    enableUltraFaceGuide();
+
+    enableAutoFaceDetection();
+
+    updateStatus(
+      "Admin Camera Connected",
+      "#22c55e"
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    updateStatus(
+      "Camera Access Failed",
+      "#ff4d6d"
+    );
+
+    retryConnection();
+
+  }
+
+}
+
+/* =========================================
+   VIDEO ENHANCEMENT
+========================================= */
+
+function applyLiveVideoEnhancement(){
+
+  video.style.filter = `
+  brightness(1.05)
+  contrast(1.12)
+  saturate(1.12)
+  hue-rotate(-2deg)
+  `;
+
+}
+
+let recognition=null, recording=false;
+
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2800)}
+function log(msg,type='SYSTEM'){const d=document.createElement('div');d.className='log-row';d.innerHTML=`<b>[${type}]</b> ${msg}`;$('log').prepend(d)}
+function showSection(id,btn){document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn?.classList.add('active');document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
+function toggleSidebar(){toast('Navigation is available from the bottom bar on mobile.')}
+function openModal(){$('modal').classList.add('show')}function closeModal(){$('modal').classList.remove('show')}
+
+function startRecording(){
+ if(recording){stopRecording();return}
+ if(!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)){toast('Speech recognition is not supported in this browser. You can type instead.');return}
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang='en-NG';
+ recognition.onstart=()=>{recording=true;$('recordStatus').textContent='LISTENING';$('micBtn').classList.add('recording');$('noise').textContent='Filtering audio…';toast('Microphone listening started.')}
+ recognition.onresult=e=>{let text='';for(let i=e.resultIndex;i<e.results.length;i++)text+=e.results[i][0].transcript;$('speechInput').value=text}
+ recognition.onerror=e=>{toast('Microphone error: '+e.error);stopRecording()}
+ recognition.onend=()=>stopRecording()
+ recognition.start()
+}
+function stopRecording(){if(recognition)try{recognition.stop()}catch(e){}recording=false;$('recordStatus').textContent='IDLE';$('micBtn').classList.remove('recording');$('noise').textContent='Noise filter ready';log('Microphone session ended.','AUDIO')}
+
+function translateText(){
+ const text=$('speechInput').value.trim();
+ if(!text){toast('Enter or speak a message first.');return}
+ const target=$('target').value;
+ const demo={English:'Safety information received. Stay calm, move toward a safe public location, and contact trusted local emergency services when appropriate.',
+ Hausa:'An karɓi bayanin tsaro. Ka kasance cikin natsuwa kuma ka matsa zuwa wuri mai aminci.',
+ Yoruba:'A ti gba bayanin aabo. Jẹ́ kí ọkàn rẹ balẹ̀, kí o sì lọ sí ibi tí ó ni ààbò.',
+ Igbo:'Anataala ozi nchekwa. Nọrọ jụụ ma gaa ebe dị nchebe.',
+ Arabic:'تم استلام معلومات السلامة. ابق هادئًا وتوجه إلى مكان آمن.',
+ French:'Les informations de sécurité ont été reçues. Restez calme et dirigez-vous vers un endroit sûr.'};
+ $('result').innerHTML='<b>'+target+' response</b><br><br>'+demo[target];
+ $('detected').textContent=$('source').value==='Auto Detect'?'Auto-detected':'Selected';
+ $('confidence').textContent='Demo';
+ $('clarity').textContent='94%';log('Translation request prepared for '+target+'.','AI');toast('working on it')
+}
+function speakResult(){const text=$('result').innerText;if(!text||text.includes('will appear')){toast('Nothing to speak yet.');return}if(!('speechSynthesis' in window)){toast('Speech output is unavailable.');return}speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(text));log('AI response sent to browser speech output.','AUDIO')}
+function clearAll(){$('speechInput').value='';$('question').value='';$('result').innerHTML='<div class="empty">Translated / AI-generated response will appear here.</div>';$('detected').textContent='—';$('confidence').textContent='—';toast('Cleared.')}
+function runDemo(){$('speechInput').value='Please translate this safety message.';$('source').value='Auto Detect';$('target').value='English';translateText()}
+function testAudio(){toast('Audio output test requested. Browser speech output is used when available.');speakResult()}
+function connectCamera(){toast('Camera connection UI opened. CONNECTION requires user permission');log('Camera connection requested.','CAM')}
+function addCamera(){toast('Camera slot added to the frontend. Maximum visible slots: 1.');log('Additional camera slot requested.','CAM')}
+function sendQuestion(){const q=$('question').value.trim();if(!q){toast('Enter a question first.');return}log('Question queued for backend AI: '+q.slice(0,70),'AI');toast('Question queued locally. A backend endpoint is required for a real AI response.')}
+function useLocation(){if(!navigator.geolocation){toast('Location API unavailable.');return}navigator.geolocation.getCurrentPosition(()=>toast('Location permission received by the browser.'),()=>toast('Location permission was not granted.'))}
+function attachMock(){toast('Evidence attachment interface is ready; upload handling belongs to the backend.')}
+async function simulateConnect() {
+  const BACKEND_URL = "http://localhost:5000";
+    toast("Connecting to backend...");
+
+    await checkBackendConnection();
+
+    if ($("connectionText").textContent === "Online Mode") {
+        toast("Backend connection successful.");
+    } else {
+        toast("Backend unavailable. Make sure Node.js is running.");
+    }
+    function setBackendOnline(data) {
+    $("connectionText").textContent = "Online Mode";
+
+    $("connectionSub").textContent =
+        "Node.js backend connected";
+
+    $("adminState").textContent = "CONNECTED";
+
+    $("adminConnection").textContent =
+        "Backend connected";
+
+    $("internet").textContent =
+        navigator.onLine ? "Online" : "Offline";
+
+    log(
+        "Successfully connected to Node.js backend.",
+        "NETWORK"
+    );
+}
+
+function setBackendOffline() {
+    $("connectionText").textContent = "Offline Mode";
+
+    $("connectionSub").textContent =
+        "Backend unavailable — running frontend locally";
+
+    $("adminState").textContent = "OFFLINE";
+
+    $("adminConnection").textContent =
+        "Backend not connected";
+
+    $("internet").textContent =
+        navigator.onLine ? "Internet only" : "Offline";
+}
+
+// Check immediately when the page loads
+checkBackendConnection();
+
+// Check again every 10 seconds
+setInterval(checkBackendConnection, 10000);
+  }
+  
+
+
+async function checkBackendConnection() {
+    try {
+        const response = await fetch(`http://localhost:5000/api/status`);
+
+        if (!response.ok) {
+            throw new Error("Backend returned an error");
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            setBackendOnline(data);
+        }
+    } catch (error) {
+        setBackendOffline();
+        console.log("Backend unavailable:", error.message);
+    }
+}
+function emergency(){toast('Emergency interface activated. ');log('Emergency UI action selected; no dispatch executed.','ALERT')}
+$('internet').textContent=navigator.onLine?'Online':'Offline';
+window.addEventListener('online',()=>{$('internet').textContent='Online';log('Browser reports internet online.','NETWORK')});
+window.addEventListener('offline',()=>{$('internet').textContent='Offline';log('Browser reports internet offline.','NETWORK')});
+
+// Keyboard shortcut suppression requested for the portal. It is not a security boundary.
+document.addEventListener('keydown',e=>{
+ const blocked=e.key==='F12'||(e.ctrlKey&&['u','s','p','c'].includes(e.key.toLowerCase()))||(e.ctrlKey&&e.shiftKey&&['i','j','c'].includes(e.key.toLowerCase()));
+ if(blocked){e.preventDefault();toast('This keyboard shortcut is disabled on the portal.');}
+});
+document.addEventListener('contextmenu',e=>{e.preventDefault();toast('Context menu disabled on this portal.');});
+</script>
+
+<style>
+/* ============================================================
+   SECURE ADMIN CONTROL CENTER
+============================================================ */
+.admin-security-card{
+  margin-top:18px;padding:18px;border:1px solid rgba(55,216,255,.18);
+  border-radius:18px;background:linear-gradient(145deg,rgba(10,25,40,.96),rgba(8,15,25,.96));
+}
+.admin-security-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.admin-security-card input,.admin-security-card select{
+  width:100%;padding:12px;border-radius:11px;border:1px solid rgba(255,255,255,.12);
+  background:#07111d;color:#e5eef8;outline:none
+}
+.admin-security-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.admin-security-actions button{
+  border:0;border-radius:10px;padding:10px 14px;cursor:pointer;
+  background:#122334;color:#dff6ff
+}
+.admin-security-actions .secure-primary{background:linear-gradient(135deg,#20bfe7,#37e6a4);color:#041017;font-weight:800}
+.admin-security-status{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:#9fb1c5}
+.admin-security-dot{width:9px;height:9px;border-radius:50%;background:#ff5c73}
+.admin-security-dot.ok{background:#39e6a4;box-shadow:0 0 12px #39e6a4}
+#cameraShareStage{
+  margin-top:18px;display:none;grid-template-columns:1.6fr .8fr;gap:14px
+}
+#cameraShareStage.show{display:grid}
+.remote-screen{
+  min-height:300px;border-radius:18px;overflow:hidden;position:relative;
+  background:#03070d;border:1px solid rgba(255,255,255,.1)
+}
+.remote-screen video{
+  width:100%;height:100%;min-height:300px;object-fit:contain;background:#000
+}
+.remote-screen .remote-label{
+  position:absolute;left:12px;top:12px;z-index:2;padding:7px 10px;border-radius:999px;
+  background:rgba(3,10,17,.78);font-size:11px
+}
+.remote-side{
+  padding:15px;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:#08121f
+}
+.user-list{display:grid;gap:8px;margin-top:10px;max-height:300px;overflow:auto}
+.user-item{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;
+  border-radius:12px;background:#0d1b2a
+}
+.user-item small{display:block;color:#7f93aa}
+.user-item button{border:0;border-radius:8px;padding:7px 9px;background:#173047;color:#dff6ff;cursor:pointer}
+.user-item button.active{background:#39e6a4;color:#041017}
+@media(max-width:800px){
+  .admin-security-grid,#cameraShareStage{grid-template-columns:1fr}
+}
+</style>
+
+<div class="admin-security-card" id="secureAdminControl">
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+    <div>
+      <strong>SECURE ADMIN CONTROL</strong>
+      <div style="font-size:11px;color:#7f93aa;margin-top:4px">
+        Protected camera-sharing control • explicit user consent required
+      </div>
+    </div>
+    <span id="adminAuthBadge" style="font-size:11px;color:#ff8190">LOCKED</span>
+  </div>
+
+  <div class="admin-security-grid" style="margin-top:14px">
+    <input id="adminApiKey" type="password" autocomplete="off" placeholder="ADMIN_API_KEY">
+    <input id="adminTargetUser" autocomplete="off" placeholder="Individual user ID">
+  </div>
+
+  <div class="admin-security-actions">
+    <button class="secure-primary" onclick="authenticateAdmin()">Authenticate Admin</button>
+    <button onclick="loadConnectedUsers()">Refresh Users</button>
+    <button onclick="requestCameraShare()">Request Camera Share</button>
+    <button onclick="stopCameraShare()">Stop Share</button>
+  </div>
+
+  <div class="admin-security-status">
+    <span class="admin-security-dot" id="adminSecurityDot"></span>
+    <span id="adminSecurityText">Administrator authentication required.</span>
+  </div>
+
+  <div id="connectedUsers" class="user-list"></div>
+
+  <div id="cameraShareStage">
+    <div class="remote-screen">
+      <div class="remote-label" id="remoteCameraLabel">NO REMOTE CAMERA</div>
+      <video id="remoteCameraVideo" autoplay playsinline controls></video>
+    </div>
+    <div class="remote-side">
+      <strong>Individual Camera Session</strong>
+      <p style="font-size:12px;color:#7f93aa;line-height:1.5">
+        The selected user must explicitly approve the camera request.
+        The administrator cannot silently activate another device's camera.
+      </p>
+      <div id="shareState" style="font-size:12px;color:#39e6a4">READY</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SECURE ADMIN + INDIVIDUAL CAMERA SHARING
+============================================================ */
+
+(() => {
+  const state = {
+    adminKey: sessionStorage.getItem("adminApiKey") || "",
+    authenticated: false,
+    ws: null,
+    pc: null,
+    roomId: null,
+    targetUserId: "",
+    targetName: "",
+    pendingIce: []
+  };
+
+  const BACKEND =
+    window.BACKEND_URL ||
+    (location.hostname === "localhost" || location.hostname === "127.0.0.1"
+      ? "http://localhost:5000"
+      : `${location.protocol}//${location.hostname}:5000`);
+
+  const WS =
+    BACKEND.replace(/^http/, "ws");
+
+  const $ = id => document.getElementById(id);
+
+  function secureToast(message){
+    if (typeof toast === "function") toast(message);
+    else alert(message);
+  }
+
+  function setAdminState(ok, text){
+    $("adminSecurityBadge")?.classList.toggle("ok", ok);
+    $("adminSecurityDot")?.classList.toggle("ok", ok);
+    $("adminAuthBadge").textContent = ok ? "AUTHENTICATED" : "LOCKED";
+    $("adminAuthBadge").style.color = ok ? "#39e6a4" : "#ff8190";
+    $("adminSecurityText").textContent = text;
+  }
+
+  async function adminFetch(path, options = {}){
+    if (!state.adminKey) throw new Error("Enter the administrator API key.");
+
+    const response = await fetch(
+      `${BACKEND}${path}`,
+      {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Admin-Key": state.adminKey,
+          ...(options.headers || {})
+        }
+      }
+    );
+
+    let data = {};
+    try { data = await response.json(); } catch {}
+
+    if (!response.ok) {
+      throw new Error(data.error || `Admin request failed (${response.status})`);
+    }
+
+    return data;
+  }
+
+  window.authenticateAdmin = async function(){
+    const input = $("adminApiKey").value.trim();
+
+    if (!input) {
+      secureToast("Enter your ADMIN_API_KEY.");
+      return;
+    }
+
+    state.adminKey = input;
+
+    try {
+      const result = await adminFetch("/api/admin/status");
+
+      if (!result.authenticated) {
+        throw new Error("Administrator authentication failed.");
+      }
+
+      state.authenticated = true;
+      sessionStorage.setItem("adminApiKey", state.adminKey);
+
+      setAdminState(
+        true,
+        `Authenticated • ${result.rooms || 0} active room(s)`
+      );
+
+      secureToast("Administrator authenticated.");
+      await loadConnectedUsers();
+
+    } catch (error) {
+      state.authenticated = false;
+      sessionStorage.removeItem("adminApiKey");
+      setAdminState(false, error.message);
+      secureToast(error.message);
+    }
+  };
+
+  window.loadConnectedUsers = async function(){
+    if (!state.authenticated) {
+      secureToast("Authenticate the administrator first.");
+      return;
+    }
+
+    try {
+      const data = await adminFetch("/api/admin/clients");
+
+      const users = data.clients || [];
+      const box = $("connectedUsers");
+
+      box.innerHTML = "";
+
+      if (!users.length) {
+        box.innerHTML =
+          '<div style="font-size:12px;color:#7f93aa;padding:8px">No connected users are currently available.</div>';
+        return;
+      }
+
+      users.forEach(user => {
+        const row = document.createElement("div");
+        row.className = "user-item";
+
+        const info = document.createElement("div");
+        info.innerHTML =
+          `<strong>${escapeHtml(user.name || "Unknown user")}</strong>` +
+          `<small>ID: ${escapeHtml(user.clientId || user.userId || "—")}</small>`;
+
+        const button = document.createElement("button");
+        button.textContent = "Select";
+        button.onclick = () => {
+          state.targetUserId =
+            user.userId || user.clientId || "";
+          state.targetName =
+            user.name || "User";
+
+          $("adminTargetUser").value =
+            state.targetUserId;
+
+          document
+            .querySelectorAll(".user-item button")
+            .forEach(b => b.classList.remove("active"));
+
+          button.classList.add("active");
+
+          $("shareState").textContent =
+            `Selected ${state.targetName}`;
+
+          secureToast(
+            `${state.targetName} selected.`
+          );
+        };
+
+        row.appendChild(info);
+        row.appendChild(button);
+        box.appendChild(row);
+      });
+
+    } catch (error) {
+      secureToast(error.message);
+    }
+  };
+
+  window.requestCameraShare = async function(){
+    if (!state.authenticated) {
+      secureToast("Authenticate the administrator first.");
+      return;
+    }
+
+    const target =
+      $("adminTargetUser").value.trim() ||
+      state.targetUserId;
+
+    if (!target) {
+      secureToast("Select or enter an individual user ID.");
+      return;
+    }
+
+    state.targetUserId = target;
+
+    try {
+      /*
+       * This asks the backend to deliver a camera-share request
+       * to the selected client. The client's browser must accept.
+       */
+      const data = await adminFetch(
+        "/api/admin/camera-share/request",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            targetUserId: target,
+            adminName: "Administrator"
+          })
+        }
+      );
+
+      $("cameraShareStage").classList.add("show");
+      $("shareState").textContent =
+        "CAMERA REQUEST SENT — WAITING FOR USER APPROVAL";
+
+      secureToast(
+        data.message ||
+        "Camera request sent to the selected user."
+      );
+
+      connectAdminRealtime(target);
+
+    } catch (error) {
+      secureToast(error.message);
+    }
+  };
+
+  function connectAdminRealtime(targetUserId){
+    try { state.ws?.close(); } catch {}
+
+    const room =
+      encodeURIComponent(
+        state.roomId ||
+        targetUserId
+      );
+
+    state.ws =
+      new WebSocket(
+        `${WS}/ws?room=${room}&name=Administrator&role=admin&userId=admin`
+      );
+
+    state.ws.onopen = () => {
+      $("shareState").textContent =
+        "REALTIME ADMIN CHANNEL CONNECTED";
+    };
+
+    state.ws.onmessage = async event => {
+      let message = {};
+      try { message = JSON.parse(event.data); } catch { return; }
+
+      if (message.type === "camera-share-accepted") {
+        $("shareState").textContent =
+          "USER APPROVED — NEGOTIATING CAMERA STREAM";
+      }
+
+      if (message.type === "camera-share-denied") {
+        $("shareState").textContent =
+          "USER DECLINED CAMERA SHARING";
+        stopCameraShare();
+      }
+
+      if (message.type === "offer") {
+        await handleOffer(message);
+      }
+
+      if (message.type === "ice-candidate") {
+        if (state.pc) {
+          try {
+            await state.pc.addIceCandidate(message.candidate);
+          } catch {}
+        }
+      }
+
+      if (message.type === "status-event") {
+        $("shareState").textContent =
+          message.message || "Remote status updated.";
+      }
+    };
+
+    state.ws.onerror = () => {
+      $("shareState").textContent =
+        "REALTIME CHANNEL ERROR";
+    };
+  }
+
+  async function handleOffer(message){
+    if (!state.pc) createPeerConnection();
+
+    await state.pc.setRemoteDescription(
+      new RTCSessionDescription(message.offer)
+    );
+
+    const answer =
+      await state.pc.createAnswer();
+
+    await state.pc.setLocalDescription(
+      answer
+    );
+
+    sendSignal({
+      type: "answer",
+      answer
+    });
+  }
+
+  function createPeerConnection(){
+    state.pc =
+      new RTCPeerConnection({
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" }
+        ]
+      });
+
+    state.pc.ontrack = event => {
+      const video =
+        $("remoteCameraVideo");
+
+      if (event.streams?.[0]) {
+        video.srcObject =
+          event.streams[0];
+
+        $("remoteCameraLabel").textContent =
+          `LIVE CAMERA • ${state.targetName || state.targetUserId}`;
+
+        $("shareState").textContent =
+          "LIVE CAMERA STREAM";
+      }
+    };
+
+    state.pc.onicecandidate = event => {
+      if (event.candidate) {
+        sendSignal({
+          type: "ice-candidate",
+          candidate: event.candidate
+        });
+      }
+    };
+
+    state.pc.onconnectionstatechange = () => {
+      const status =
+        state.pc.connectionState;
+
+      if (status === "connected") {
+        $("shareState").textContent =
+          "LIVE CAMERA STREAM";
+      }
+
+      if (
+        ["failed","disconnected","closed"]
+          .includes(status)
+      ) {
+        $("shareState").textContent =
+          `CAMERA CONNECTION ${status.toUpperCase()}`;
+      }
+    };
+  }
+
+  function sendSignal(payload){
+    if (
+      state.ws &&
+      state.ws.readyState === WebSocket.OPEN
+    ) {
+      state.ws.send(
+        JSON.stringify({
+          ...payload,
+          targetUserId:
+            state.targetUserId
+        })
+      );
+    }
+  }
+
+  window.stopCameraShare = function(){
+    try { state.ws?.close(); } catch {}
+    try { state.pc?.close(); } catch {}
+
+    state.ws = null;
+    state.pc = null;
+
+    const video =
+      $("remoteCameraVideo");
+
+    if (video) video.srcObject = null;
+
+    $("shareState").textContent =
+      "CAMERA SHARE STOPPED";
+
+    $("remoteCameraLabel").textContent =
+      "NO REMOTE CAMERA";
+
+    $("cameraShareStage").classList.remove("show");
+
+    secureToast("Camera-sharing session stopped.");
+  };
+
+  function escapeHtml(value){
+    return String(value ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  $("adminApiKey").value =
+    state.adminKey;
+
+  if (state.adminKey) {
+    setTimeout(
+      () => authenticateAdmin(),
+      150
+    );
+  }
+})();
+</script>
+
+</body>
+</html>
